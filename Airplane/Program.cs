@@ -1,5 +1,5 @@
 ﻿string fileName = "preplannedCourse.txt";
-string path = Path.Combine(Environment.CurrentDirectory, @"Data\", fileName);
+string path = Path.Combine(Directory.GetParent(Directory.GetCurrentDirectory()).Parent.Parent.FullName, @"Data\", fileName);
 
 int direction = 0;
 int horizontal = 0;
