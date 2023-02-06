@@ -24,18 +24,9 @@ foreach (var course in File.ReadAllLines(path))
         calculateDown(value);
     }
 
-    //if (command == "dive")
-    //{
-    //calculateDive();
-    //}
 }
 
 calculateTotal();
-
-//void calculateDive()
-//{
-// vertical = vertical - 4; 
-//}
 
 void calculateForward(int value)
 {
