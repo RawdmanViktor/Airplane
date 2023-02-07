@@ -1,47 +1,96 @@
-﻿string fileName = "preplannedCourse.txt";
-string path = Path.Combine(Directory.GetParent(Directory.GetCurrentDirectory()).Parent.Parent.FullName, @"Data\", fileName);
+﻿using System;
+using System.Collections.Generic;
 
-int direction = 0;
-int horizontal = 0;
-int vertical = 0;
-
-foreach (var course in File.ReadAllLines(path))
+abstract class Operation
 {
-    string[] courseDetails = course.Split(" ");
-    string command = courseDetails[0];
-    int value = Convert.ToInt32(courseDetails[1]);
+    public abstract void Execute(int value);
+}
 
-    if (command == "forward")
+class ForwardOperation : Operation
+{
+    private int direction;
+    private int horizontal;
+    private int vertical;
+
+    public ForwardOperation(int direction, ref int horizontal, ref int vertical)
     {
-        calculateForward(value);
-    }
-    if (command == "up")
-    {
-        calculateUp(value);
-    }
-    if (command == "down")
-    {
-        calculateDown(value);
+        this.direction = direction;
+        this.horizontal = horizontal;
+        this.vertical = vertical;
     }
 
+    public override void Execute(int value)
+    {
+        horizontal += value;
+        vertical = (value * direction) + vertical;
+    }
 }
 
-calculateTotal();
+class UpOperation : Operation
+{
+    private int direction;
 
-void calculateForward(int value)
-{
-    horizontal += value;
-    vertical = (value * direction) + vertical;
+    public UpOperation(ref int direction)
+    {
+        this.direction = direction;
+    }
+
+    public override void Execute(int value)
+    {
+        direction += value;
+    }
 }
-void calculateUp(int value)
+
+class DownOperation : Operation
 {
-    direction += value;
+    private int direction;
+
+    public DownOperation(ref int direction)
+    {
+        this.direction = direction;
+    }
+
+    public override void Execute(int value)
+    {
+        direction -= value;
+    }
 }
-void calculateDown(int value)
+
+class Program
 {
-    direction -= value;
-}
-void calculateTotal()
-{
-    Console.WriteLine(horizontal * vertical);
+    static void Main(string[] args)
+    {
+        string fileName = "preplannedCourse.txt";
+        string path = Path.Combine(Directory.GetParent(Directory.GetCurrentDirectory()).Parent.Parent.FullName, @"Data\", fileName);
+
+        int direction = 0;
+        int horizontal = 0;
+        int vertical = 0;
+
+        Dictionary<string, Func<int, Operation>> operations = new Dictionary<string, Func<int, Operation>>
+        {
+            { "forward", value => new ForwardOperation(direction, ref horizontal, ref vertical) },
+            { "up", value => new UpOperation(ref direction) },
+            { "down", value => new DownOperation(ref direction) },
+        };
+
+        foreach (var course in File.ReadAllLines(path))
+        {
+            string[] courseDetails = course.Split(" ");
+            string command = courseDetails[0];
+            int value = Convert.ToInt32(courseDetails[1]);
+
+            if (operations.TryGetValue(command, out var operationFactory))
+            {
+                Operation operation = operationFactory(value);
+                operation.Execute(value);
+            }
+            else
+            {
+                Console.WriteLine($"Unknown command: {command}");
+            }
+        }
+
+        Console.WriteLine(horizontal * vertical);
+    }
 }
