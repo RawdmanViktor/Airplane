@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-
-abstract class Operation
+﻿abstract class Operation
 {
-    public abstract void Execute(int value);
+    public abstract void Execute(int value, ref int direction, ref int horizontal, ref int vertical);
 }
 
 class ForwardOperation : Operation
@@ -12,14 +9,14 @@ class ForwardOperation : Operation
     private int horizontal;
     private int vertical;
 
-    public ForwardOperation(int direction, ref int horizontal, ref int vertical)
+    public ForwardOperation(ref int direction, ref int horizontal, ref int vertical)
     {
         this.direction = direction;
         this.horizontal = horizontal;
         this.vertical = vertical;
     }
 
-    public override void Execute(int value)
+    public override void Execute(int value, ref int direction, ref int horizontal, ref int vertical)
     {
         horizontal += value;
         vertical = (value * direction) + vertical;
@@ -35,8 +32,9 @@ class UpOperation : Operation
         this.direction = direction;
     }
 
-    public override void Execute(int value)
+    public override void Execute(int value, ref int direction, ref int horizontal, ref int vertical)
     {
+
         direction += value;
     }
 }
@@ -50,7 +48,7 @@ class DownOperation : Operation
         this.direction = direction;
     }
 
-    public override void Execute(int value)
+    public override void Execute(int value, ref int direction, ref int horizontal, ref int vertical)
     {
         direction -= value;
     }
@@ -69,7 +67,7 @@ class Program
 
         Dictionary<string, Func<int, Operation>> operations = new Dictionary<string, Func<int, Operation>>
         {
-            { "forward", value => new ForwardOperation(direction, ref horizontal, ref vertical) },
+            { "forward", value => new ForwardOperation(ref direction, ref horizontal, ref vertical) },
             { "up", value => new UpOperation(ref direction) },
             { "down", value => new DownOperation(ref direction) },
         };
@@ -83,7 +81,7 @@ class Program
             if (operations.TryGetValue(command, out var operationFactory))
             {
                 Operation operation = operationFactory(value);
-                operation.Execute(value);
+                operation.Execute(value, ref direction, ref horizontal, ref vertical);
             }
             else
             {
